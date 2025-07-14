@@ -1,7 +1,6 @@
-use std::{
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::{sync::Arc, time::Duration};
+
+use tokio::sync::Mutex;
 
 use dotenv::dotenv;
 use poise::serenity_prelude::{self as serenity, GuildId};

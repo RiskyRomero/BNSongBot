@@ -1,3 +1,5 @@
+use rusqlite::{Row, Statement};
+
 use crate::{Context, Error};
 
 #[derive(Debug, poise::ChoiceParameter)]
@@ -30,61 +32,53 @@ pub async fn list(
 
     let db = ctx.data().db.clone();
 
-    if album == "" {
-        let list_str = tokio::task::spawn_blocking(move || {
-            let db_lock = db.blocking_lock(); // NOTE: blocking_lock in spawn_blocking
+    let list_str = tokio::task::spawn_blocking(move || {
+        let db_lock = db.blocking_lock();
 
-            let mut stmt = db_lock.prepare("SELECT * FROM songs").unwrap(); // handle properly in real code
-            let song_iter = stmt
-                .query_map([], |row| {
-                    Ok(Song {
-                        id: row.get(0)?,
-                        title: row.get(1)?,
-                        album: row.get(2)?,
-                    })
-                })
-                .unwrap();
+        let mut stmt: Statement<'_>;
 
-            let mut list_str = String::new();
-            for song_result in song_iter {
-                let song = song_result.unwrap(); // handle properly
-                list_str += &format!("{} - {} ({})\n", song.id, song.title, song.album);
-            }
-
-            list_str
-        })
-        .await
-        .unwrap(); // unwrap() is safe here unless thread panicked
-
-        ctx.say(list_str).await?;
-    } else {
-        let list_str = tokio::task::spawn_blocking(move || {
-            let db_lock = db.blocking_lock(); // NOTE: blocking_lock in spawn_blocking
-
-            let mut stmt = db_lock
+        // Prepare the query based on whether an album is selected or not
+        if album == "" {
+            stmt = db_lock.prepare("SELECT * FROM songs").unwrap();
+        } else {
+            stmt = db_lock
                 .prepare("SELECT * FROM songs WHERE album = ?1")
-                .unwrap(); // handle properly in real code
-            let song_iter = stmt
-                .query_map([album], |row| {
-                    Ok(Song {
-                        id: row.get(0)?,
-                        title: row.get(1)?,
-                        album: row.get(2)?,
-                    })
-                })
                 .unwrap();
+        }
 
-            let mut list_str = String::new();
-            for song_result in song_iter {
-                let song = song_result.unwrap(); // handle properly
-                list_str += &format!("{} - {} ({})\n", song.id, song.title, song.album);
-            }
+        let map_row = |row: &Row<'_>| {
+            Ok(Song {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                album: row.get(2)?,
+            })
+        };
 
-            list_str
-        })
-        .await
-        .unwrap(); // unwrap() is safe here unless thread panicked
+        let song_iter = if album == "" {
+            stmt.query_map([], map_row).unwrap()
+        } else {
+            stmt.query_map([album], map_row).unwrap()
+        };
 
+        // Create a string to hold the song list output
+        let mut list_str = String::new();
+        for song_result in song_iter {
+            let song = song_result.unwrap();
+            list_str += &format!("{} - {} ({})\n", song.id, song.title, song.album);
+        }
+
+        list_str
+    })
+    .await
+    .unwrap();
+
+    if list_str.is_empty() {
+        if album == "" {
+            ctx.say("No songs found.").await?;
+        } else {
+            ctx.say(format!("No songs found for {}.", album)).await?;
+        }
+    } else {
         ctx.say(list_str).await?;
     }
 

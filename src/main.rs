@@ -66,6 +66,7 @@ async fn main() {
                 commands::new::new(),
                 commands::list::list(),
                 commands::random::random(),
+                commands::delete::delete(),
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("~".into()),

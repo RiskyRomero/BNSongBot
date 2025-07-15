@@ -1,4 +1,5 @@
 use crate::{Context, Error};
+use poise::serenity_prelude::{self as serenity, Color};
 use rusqlite::params;
 
 #[derive(Debug, poise::ChoiceParameter)]
@@ -35,11 +36,16 @@ pub async fn new(
         .unwrap_or(0); // Default to 0 if the query fails
 
     if exists > 0 {
-        ctx.say(format!(
-            "The song '{}' already exists in the album '{}'.",
-            title, album_str
-        ))
-        .await?;
+        let fail_embed = serenity::CreateEmbed::default()
+            .title("Error!")
+            .color(Color::RED)
+            .description(format!(
+                "The song '{}' already exists in the album '{}'.",
+                title, album_str
+            ));
+
+        ctx.send(poise::CreateReply::default().embed(fail_embed))
+            .await?;
         return Ok(());
     }
 
@@ -49,11 +55,16 @@ pub async fn new(
         params![title, album_str],
     )?;
 
-    ctx.say(format!(
-        "Inserted song: '{}' in album '{}'.",
-        title, album_str
-    ))
-    .await?;
+    let success_embed = serenity::CreateEmbed::default()
+        .title("Success!")
+        .color(Color::LIGHT_GREY)
+        .description(format!(
+            "Inserted song: '{}' in album '{}'.",
+            title, album_str
+        ));
+
+    ctx.send(poise::CreateReply::default().embed(success_embed))
+        .await?;
 
     Ok(())
 }

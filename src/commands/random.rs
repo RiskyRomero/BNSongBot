@@ -1,4 +1,5 @@
 use crate::{Context, Error};
+use poise::serenity_prelude::{self as serenity, Color, colours};
 use rusqlite::{Row, params};
 
 #[derive(Debug, poise::ChoiceParameter)]
@@ -69,7 +70,11 @@ pub async fn random(
     .await??;
 
     if songs.is_empty() {
-        ctx.say("Couldn't retrieve any songs. No songs found in database.")
+        let song_empty_embed = serenity::CreateEmbed::new()
+            .title("Error")
+            .color(Color::RED)
+            .description("Couldn't retrieve any songs. No songs found in database.");
+        ctx.send(poise::CreateReply::default().embed(song_empty_embed))
             .await?;
     } else {
         let formatted = songs
@@ -79,7 +84,13 @@ pub async fn random(
             .collect::<Vec<_>>()
             .join("\n");
 
-        ctx.say(formatted).await?;
+        let random_song_embed = serenity::CreateEmbed::new()
+            .title("Random Result(s)")
+            .color(Color::BLUE)
+            .description(formatted);
+
+        ctx.send(poise::CreateReply::default().embed(random_song_embed))
+            .await?;
     }
 
     Ok(())

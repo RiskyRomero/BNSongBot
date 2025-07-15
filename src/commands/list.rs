@@ -1,3 +1,4 @@
+use poise::serenity_prelude::{self as serenity, Color};
 use rusqlite::{Row, Statement};
 
 use crate::{Context, Error};
@@ -73,13 +74,25 @@ pub async fn list(
     .unwrap();
 
     if list_str.is_empty() {
+        let mut no_songs_found_str = String::new();
         if album == "" {
-            ctx.say("No songs found.").await?;
+            no_songs_found_str = "No songs found.".to_string();
         } else {
-            ctx.say(format!("No songs found for {}.", album)).await?;
+            no_songs_found_str = format!("No songs found for {}.", album);
         }
+        let no_songs_embed = serenity::CreateEmbed::new()
+            .title("Error")
+            .color(Color::RED)
+            .description(no_songs_found_str);
+        ctx.send(poise::CreateReply::default().embed(no_songs_embed))
+            .await?;
     } else {
-        ctx.say(list_str).await?;
+        let list_embed = serenity::CreateEmbed::new()
+            .title("Song List")
+            .color(Color::MAGENTA)
+            .description(list_str);
+        ctx.send(poise::CreateReply::default().embed(list_embed))
+            .await?;
     }
 
     Ok(())

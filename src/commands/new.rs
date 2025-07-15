@@ -59,8 +59,10 @@ pub async fn new(
         .title("Success!")
         .color(Color::LIGHT_GREY)
         .description(format!(
-            "Inserted song: '{}' in album '{}'.",
-            title, album_str
+            "Inserted song: '{}' with ID: {} in album '{}'.",
+            title,
+            db_lock.last_insert_rowid(),
+            album_str
         ));
 
     ctx.send(poise::CreateReply::default().embed(success_embed))

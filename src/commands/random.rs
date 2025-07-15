@@ -80,7 +80,7 @@ pub async fn random(
         let formatted = songs
             .iter()
             .enumerate()
-            .map(|(i, s)| format!("{}. {} — {}", i + 1, s.title, s.album))
+            .map(|(i, s)| format!("{}. {} — {} [ID: {}]", i + 1, s.title, s.album, s.id))
             .collect::<Vec<_>>()
             .join("\n");
 

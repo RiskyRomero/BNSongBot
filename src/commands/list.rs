@@ -62,7 +62,7 @@ pub async fn list(
         };
 
         // Create a string to hold the song list output
-        let mut list_str = String::new();
+        let mut list_str = String::from("**ID - Title (Album)**\n");
         for song_result in song_iter {
             let song = song_result.unwrap();
             list_str += &format!("{} - {} ({})\n", song.id, song.title, song.album);

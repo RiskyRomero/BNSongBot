@@ -29,7 +29,7 @@ pub async fn new(
     // Check if the song already exists
     let exists: i32 = db_lock
         .query_row(
-            "SELECT COUNT(*) FROM songs WHERE title = ?1",
+            "SELECT COUNT(*) FROM songs WHERE UPPER(title) = UPPER(?1)",
             params![title],
             |row| row.get(0),
         )

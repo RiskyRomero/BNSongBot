@@ -1,5 +1,5 @@
 use crate::{Context, Error};
-use poise::serenity_prelude::{self as serenity, Color, colours};
+use poise::serenity_prelude::{self as serenity, Color};
 use rusqlite::{Row, params};
 
 #[derive(Debug, poise::ChoiceParameter)]

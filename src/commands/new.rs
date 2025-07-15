@@ -1,6 +1,7 @@
 use crate::{Context, Error};
+use futures::{Stream, StreamExt};
 use poise::serenity_prelude::{self as serenity, Color};
-use rusqlite::params;
+use rusqlite::{Row, params};
 
 #[derive(Debug, poise::ChoiceParameter)]
 pub enum Album {
@@ -12,18 +13,67 @@ pub enum Album {
     Covers,
 }
 
+async fn autocomplete_album<'a>(
+    ctx: Context<'_>,
+    partial: &'a str,
+) -> impl Stream<Item = String> + 'a {
+    let db = ctx.data().db.clone(); // Access the database connection
+
+    // Clone `partial` to move it into the blocking task closure
+    let partial_cloned = partial.to_string(); // Clone `partial` as a `String`
+
+    // Perform the database query in a blocking task
+    let stream = tokio::task::spawn_blocking(move || -> Result<Vec<String>, rusqlite::Error> {
+        let db_lock = db.blocking_lock(); // Lock the database for thread-safe access
+
+        let mut stmt = db_lock.prepare("SELECT name FROM albums WHERE name LIKE ?1")?;
+        let album_iter = stmt.query_map([format!("{}%", partial_cloned)], |row: &Row| {
+            row.get::<_, String>(0)
+        })?;
+
+        // Collect the album names into a Vec
+        let mut album_names = Vec::new();
+        for album_result in album_iter {
+            match album_result {
+                Ok(album_name) => {
+                    album_names.push(album_name.clone());
+                }
+                Err(err) => {
+                    // Log the error but continue collecting other names
+                    eprintln!("Error while fetching album: {}", err);
+                }
+            }
+        }
+
+        Ok(album_names)
+    })
+    .await;
+
+    let album_names = stream
+        .expect("Failed to fetch album names")
+        .expect("Error fetching album names");
+
+    if album_names.is_empty() {
+        eprintln!("No matching albums found.");
+    }
+
+    futures::stream::iter(album_names)
+}
+
 /// Adds a new song to the list
 #[poise::command(slash_command, prefix_command)]
 pub async fn new(
     ctx: Context<'_>,
     #[description = "Title of the song"] title: String,
-    #[description = "Album of the song"] album: Album,
+    #[autocomplete = "autocomplete_album"]
+    #[description = "Album of the song"]
+    album: String,
 ) -> Result<(), Error> {
-    let album_str = match album {
-        Album::SinglesBSides => "Singles/B-Sides",
-        Album::LiveSongs => "Live Songs",
-        Album::Covers => "Covers",
-    };
+    // let album_str = match album {
+    //     Album::SinglesBSides => "Singles/B-Sides",
+    //     Album::LiveSongs => "Live Songs",
+    //     Album::Covers => "Covers",
+    // };
 
     let db_lock = ctx.data().db.lock().await;
 
@@ -42,7 +92,7 @@ pub async fn new(
             .color(Color::RED)
             .description(format!(
                 "The song '{}' already exists in the album '{}'.",
-                title, album_str
+                title, album
             ));
 
         ctx.send(poise::CreateReply::default().embed(fail_embed))
@@ -53,7 +103,7 @@ pub async fn new(
     // If the song does not exist, insert it
     db_lock.execute(
         "INSERT INTO songs (title, album) VALUES (?1, ?2)",
-        params![title, album_str],
+        params![title, album],
     )?;
 
     let success_embed = serenity::CreateEmbed::default()
@@ -63,7 +113,7 @@ pub async fn new(
             "Inserted song: '{}' with ID: {} in album '{}'.",
             title,
             db_lock.last_insert_rowid(),
-            album_str
+            album
         ));
 
     ctx.send(poise::CreateReply::default().embed(success_embed))

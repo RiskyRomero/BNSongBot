@@ -1,3 +1,4 @@
+pub mod album;
 pub mod delete;
 pub mod help;
 pub mod list;

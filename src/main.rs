@@ -47,6 +47,16 @@ async fn main() {
         )
         .unwrap();
 
+    connection
+        .execute(
+            "CREATE TABLE IF NOT EXISTS albums (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT
+            )",
+            [],
+        )
+        .unwrap();
+
     // Wrap the connection in Arc<Mutex<Connection>> for thread safety
     let shared_db = Arc::new(Mutex::new(connection));
 
@@ -67,6 +77,7 @@ async fn main() {
                 commands::list::list(),
                 commands::random::random(),
                 commands::delete::delete(),
+                commands::album::album(),
             ],
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("~".into()),

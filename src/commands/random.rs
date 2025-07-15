@@ -19,6 +19,7 @@ struct Song {
     album: String,
 }
 
+/// Gets a single or multiple random songs
 #[poise::command(slash_command, prefix_command)]
 pub async fn random(
     ctx: Context<'_>,

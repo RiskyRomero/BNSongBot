@@ -12,6 +12,7 @@ pub enum Album {
     Covers,
 }
 
+/// Adds a new song to the list
 #[poise::command(slash_command, prefix_command)]
 pub async fn new(
     ctx: Context<'_>,

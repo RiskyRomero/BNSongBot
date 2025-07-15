@@ -19,6 +19,7 @@ struct Song {
     album: String,
 }
 
+/// Displays a list of songs
 #[poise::command(slash_command, prefix_command)]
 pub async fn list(
     ctx: Context<'_>,

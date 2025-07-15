@@ -1,5 +1,6 @@
 use crate::{Context, Error};
 
+/// Displays help about a command
 #[poise::command(prefix_command, track_edits, slash_command)]
 pub async fn help(
     ctx: Context<'_>,

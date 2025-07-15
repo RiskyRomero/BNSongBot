@@ -75,7 +75,7 @@ pub async fn list(
     .unwrap();
 
     if list_str.is_empty() {
-        let mut no_songs_found_str = String::new();
+        let no_songs_found_str: String;
         if album == "" {
             no_songs_found_str = "No songs found.".to_string();
         } else {

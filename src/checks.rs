@@ -1,15 +1,10 @@
-use poise::serenity_prelude::RoleId;
+use poise::serenity_prelude as serenity;
 
 use crate::Context;
 
 #[must_use]
 pub fn is_moderator(ctx: Context<'_>) -> bool {
-    // let mod_role_id = ctx.data().mod_role_id;
-    let mod_role_id: RoleId = std::env::var("MOD_ROLE_ID")
-        .expect("Failed to get 'MOD_ROLE_ID' from .env file")
-        .parse::<u64>()
-        .expect("Failed to parse 'MOD_ROLE_ID' as u64")
-        .into();
+    let mod_role_id: serenity::RoleId = ctx.data().mod_role_id;
 
     match ctx {
         Context::Application(app_context) => {

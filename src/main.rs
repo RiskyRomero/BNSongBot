@@ -11,6 +11,7 @@ mod commands;
 
 struct Data {
     db: Arc<Mutex<Connection>>, // Wrap Connection in Mutex for thread safety
+    mod_role_id: serenity::RoleId, // ID of the moderator role
 }
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -69,6 +70,12 @@ async fn main() {
         .parse::<GuildId>()
         .expect("Invalid `GUILD_ID` env var");
 
+    let mod_role_id: serenity::RoleId = std::env::var("MOD_ROLE_ID")
+        .expect("Failed to get 'MOD_ROLE_ID' from .env file")
+        .parse::<u64>()
+        .expect("Failed to parse 'MOD_ROLE_ID' as u64")
+        .into();
+
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: vec![
@@ -107,6 +114,7 @@ async fn main() {
                     .await?;
                 Ok(Data {
                     db: shared_db.clone(),
+                    mod_role_id,
                 })
             })
         })

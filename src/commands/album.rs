@@ -14,7 +14,7 @@ struct Album {
     check = "crate::checks::check_is_moderator"
 )]
 
-/// Create or delete an album
+/// Create, delete or list an album
 pub async fn album(_: Context<'_>) -> Result<(), Error> {
     // This will never be called, because `subcommand_required` parameter is set
     Ok(())

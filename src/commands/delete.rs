@@ -3,7 +3,11 @@ use poise::serenity_prelude::{self as serenity, Color};
 use rusqlite::params;
 
 /// Deletes a song from the list by its ID
-#[poise::command(slash_command, prefix_command)]
+#[poise::command(
+    slash_command,
+    prefix_command,
+    check = "crate::checks::check_is_moderator"
+)]
 pub async fn delete(
     ctx: Context<'_>,
     #[description = "The ID of the song to delete"] song_id: i32,

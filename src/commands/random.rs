@@ -20,7 +20,11 @@ struct Song {
 }
 
 /// Gets a single or multiple random songs
-#[poise::command(slash_command, prefix_command)]
+#[poise::command(
+    slash_command,
+    prefix_command,
+    check = "crate::checks::check_is_moderator"
+)]
 pub async fn random(
     ctx: Context<'_>,
     #[description = "Select an album to get a random song from"] album: Option<Album>,

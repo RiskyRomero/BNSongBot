@@ -61,7 +61,11 @@ async fn autocomplete_album<'a>(
 }
 
 /// Adds a new song to the list
-#[poise::command(slash_command, prefix_command)]
+#[poise::command(
+    slash_command,
+    prefix_command,
+    check = "crate::checks::check_is_moderator"
+)]
 pub async fn new(
     ctx: Context<'_>,
     #[description = "Title of the song"] title: String,

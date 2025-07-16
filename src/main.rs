@@ -6,6 +6,7 @@ use dotenv::dotenv;
 use poise::serenity_prelude::{self as serenity, GuildId};
 use rusqlite::Connection;
 
+mod checks;
 mod commands;
 
 struct Data {

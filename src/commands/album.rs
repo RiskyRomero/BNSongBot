@@ -10,7 +10,8 @@ struct Album {
     prefix_command,
     slash_command,
     subcommands("create", "delete", "list"),
-    subcommand_required
+    subcommand_required,
+    check = "crate::checks::check_is_moderator"
 )]
 
 /// Create or delete an album

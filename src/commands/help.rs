@@ -1,7 +1,12 @@
 use crate::{Context, Error};
 
 /// Displays help about a command
-#[poise::command(prefix_command, track_edits, slash_command)]
+#[poise::command(
+    prefix_command,
+    track_edits,
+    slash_command,
+    check = "crate::checks::check_is_moderator"
+)]
 pub async fn help(
     ctx: Context<'_>,
     #[description = "Specific command to show help about"]

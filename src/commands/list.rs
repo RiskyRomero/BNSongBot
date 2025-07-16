@@ -20,7 +20,11 @@ struct Song {
 }
 
 /// Displays a list of songs
-#[poise::command(slash_command, prefix_command)]
+#[poise::command(
+    slash_command,
+    prefix_command,
+    check = "crate::checks::check_is_moderator"
+)]
 pub async fn list(
     ctx: Context<'_>,
     #[description = "Select an album to view songs"] album: Option<Album>,
